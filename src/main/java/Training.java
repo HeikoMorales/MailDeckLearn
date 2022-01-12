@@ -11,7 +11,11 @@ public class Training {
 		this.user_id = user_id;
 		this.deck_id = deck_id;
 		this.date = date.toLocalDate();
-		
+
+	}
+
+	public int getTrainingId() {
+		return training_id;
 	}
 
 	@Override
