@@ -14,7 +14,7 @@ public class Main {
 	List<UserIdLoader> userIdLoaderList;
 
 	int userLoaderTherads = 20;
-	int courierTherads = 5;
+	int courierTherads = 20;
 	int userIdLoaderTherads = 1;
 
 	public Main() {
