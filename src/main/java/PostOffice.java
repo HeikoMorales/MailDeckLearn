@@ -1,7 +1,8 @@
-import java.sql.Date;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+import static java.time.temporal.ChronoUnit.DAYS;
 
 public class PostOffice {
 
@@ -47,13 +48,28 @@ public class PostOffice {
 
 			for (Training training : trainings) {
 
-				Date training_session_date = DBConnector.loadTraining_session_date(training.getTrainingId());
-				if (training_session_date != null) {
-					System.out
-							.println(training.toString() + " training_Session_date: "
-									+ training_session_date);
-				}
+				Training_session training_session = DBConnector.loadTraining_session(training.getTrainingId());
+				if (training_session != null) {
 
+					int box_number = DBConnector.loadMinBox(training_session.training_session_id);
+					if (box_number != 0) {
+						System.out.println(
+								training.toString() + " " + training_session.toString() + " box Number: " + box_number);
+						
+						LocalDate training_session_date = training_session.getTraining_session_date().toLocalDate();
+						Long daysBetween = DAYS.between(training_session_date, LocalDate.now());
+						for (int i = 0; i < 10; i++) {
+							if (Math.pow(2, i) > daysBetween) {
+								if (i >= box_number) {
+									System.out.println("necesario mandar correo");
+									//tienes que meter el buffer aka
+									break;
+								}
+							}
+						}
+
+					}
+				}
 			}
 			endUserLoaders++;
 			// System.out.println(endUserLoaders);

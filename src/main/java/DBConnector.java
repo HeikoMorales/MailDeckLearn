@@ -1,5 +1,4 @@
 import java.sql.Connection;
-import java.sql.Date;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -13,49 +12,47 @@ public class DBConnector {
 	static String username = "root";
 	static String password = "Ikasle12345";
 
-	public static Date loadResult_id(int training_session_id) {
-		Date training_session_date = null;
+	public static Integer loadMinBox(int training_session_id) {
+		Integer boxNumber = -1;
 		try {
 			Connection connection = DriverManager.getConnection(url, username, password);
 
-			String sql = "SELECT results_id FROM results WHERE training_session_id = " + training_session_id +
-					"AND box_number = (SELECT min(box_number) FROM results WHERE training_session_id = "
-					+ training_session_id + ")";
+			String sql = "SELECT min(box_number) FROM results WHERE training_session_id = " + training_session_id;
 
 			Statement statement = connection.createStatement();
 
 			ResultSet result = statement.executeQuery(sql);
 
 			while (result.next()) {
-				training_session_date = result.getDate(1);
+				boxNumber = result.getInt(1);
 			}
 			connection.close();
 		} catch (SQLException e) {
 
 			e.printStackTrace();
 		}
-		return training_session_date;
+		return boxNumber;
 	}
 
-	public static Date loadTraining_session_date(int training_id) {
-		Date training_session_date = null;
+	public static Training_session loadTraining_session(int training_id) {
+		Training_session training_session = null;
 		try {
 			Connection connection = DriverManager.getConnection(url, username, password);
 
-			String sql = "SELECT max(training_session_date) FROM training_session WHERE training_id = " + training_id;
+			String sql = "SELECT * FROM training_session WHERE training_id = " + training_id;
 			Statement statement = connection.createStatement();
 
 			ResultSet result = statement.executeQuery(sql);
 
 			while (result.next()) {
-				training_session_date = result.getDate(1);
+				training_session = new Training_session(result.getInt(1), result.getInt(2), result.getDate(3));
 			}
 			connection.close();
 		} catch (SQLException e) {
 
 			e.printStackTrace();
 		}
-		return training_session_date;
+		return training_session;
 	}
 
 	public static int countUsers() {
