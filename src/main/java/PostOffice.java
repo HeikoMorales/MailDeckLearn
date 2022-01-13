@@ -16,7 +16,8 @@ public class PostOffice {
 	Lock mutexCourier;
 
 	int bufferCapacity = 20;
-	int endUserLoaders = 0, endCheckMail = 0;
+	int endUserLoaders = 0;
+	boolean endCheckMail = false;
 	int countUsers = 0;
 
 	public PostOffice() {
@@ -55,18 +56,21 @@ public class PostOffice {
 
 			for (Training training : trainings) {
 				if (checkMail(training)) {
-					//System.out.println("necesario mandar correo");
+					// System.out.println("necesario mandar correo");
 					trainingMail.add(training);
 				}
 			}
 
 			if (trainingMail.size() != 0) {
-					System.out.println(trainingMail.size());
-					bufferTraining.put(trainingMail);
+				// System.out.println(trainingMail.size());
+				bufferTraining.put(trainingMail);
 			}
 			endUserLoaders++;
 		}
+		endCheckMail = true;
+		System.out.println("CAMBIOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO " + endCheckMail);
 		mutex.unlock();
+
 		System.out.println("----------------------- UserLoader number: " + id + " -----------------------");
 	}
 
@@ -78,7 +82,8 @@ public class PostOffice {
 
 			int box_number = DBConnector.loadMinBox(training_session.training_session_id);
 			if (box_number != 0) {
-				//System.out.println(training.toString() + " " + training_session.toString() + " box Number: " + box_number);
+				// System.out.println(training.toString() + " " + training_session.toString() +
+				// " box Number: " + box_number);
 
 				LocalDate training_session_date = training_session.getTraining_session_date().toLocalDate();
 				Long daysBetween = DAYS.between(training_session_date, LocalDate.now());
@@ -98,18 +103,31 @@ public class PostOffice {
 	}
 
 	public void courierAction(int id) throws InterruptedException {
-		//System.out.println("----------------------- Courier number: " + id + " -----------------------");
+
 		mutexCourier.lock();
-		while (endCheckMail < countUsers) {
+		System.out.println("----------------------- Courier enter: " + id + "-----------------------");
+		while (!endCheckMail || !bufferTraining.isEmpty()) {
+
+			System.out.println(
+					"endCheckMail: " + endCheckMail + " bufferTraining.isEmpty(): " + bufferTraining.isEmpty());
+			mutexCourier.unlock();
+
+			System.out.println("hilo: " + id + " antes de coger un traing");
 			List<Training> trainingsMail = bufferTraining.get();
+			System.out.println("hilo: " + id + " despues de coger un traing");
+
+			Thread.sleep(2000);
 			for (Training training : trainingsMail) {
 				System.out.println(training.getTrainingId());
 			}
-			
-			endCheckMail++;
+			mutexCourier.lock();
+
 		}
+
 		mutexCourier.unlock();
-		System.out.println("----------------------- Courier number: " + id + " -----------------------");
+		System.out.println("----------------------- Courier exit: " + id + " -----------------------");
 	}
-	//Se boklea por el bucle del while crear una variable ended que este protegida en un metodo fuera por el mutex 1
+	// Se boklea por la linea List<Training> trainingsMail = bufferTraining.get();
+	// (116) los hilos se quedan esperando a que se metan mas datos pero nunca va a
+	// apasar
 }

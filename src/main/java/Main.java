@@ -36,14 +36,13 @@ public class Main {
 			userLoaderList.get(i).join();
 		}
 
-		for (int i = 0; i < courierTherads; i++) {
-			courierList.get(i).join();
-		}
-
 		for (int i = 0; i < userIdLoaderTherads; i++) {
 			userIdLoaderList.get(i).join();
 		}
 
+		for (int i = 0; i < courierTherads; i++) {
+			courierList.get(i).join();
+		}
 	}
 
 	private void runTherads() {
@@ -51,14 +50,13 @@ public class Main {
 			userLoaderList.get(i).start();
 		}
 
-		for (int i = 0; i < courierTherads; i++) {
-			courierList.get(i).start();
-		}
-
 		for (int i = 0; i < userIdLoaderTherads; i++) {
 			userIdLoaderList.get(i).start();
 		}
 
+		for (int i = 0; i < courierTherads; i++) {
+			courierList.get(i).start();
+		}
 	}
 
 	private void initTheads() {
@@ -67,14 +65,13 @@ public class Main {
 			userLoaderList.add(i, new UserLoader(i, postOffice));
 		}
 
-		for (int i = 0; i < courierTherads; i++) {
-			courierList.add(i, new Courier(i, postOffice));
-		}
-
 		for (int i = 0; i < userIdLoaderTherads; i++) {
 			userIdLoaderList.add(i, new UserIdLoader(postOffice, i));
 		}
 
+		for (int i = 0; i < courierTherads; i++) {
+			courierList.add(i, new Courier(i, postOffice));
+		}
 	}
 
 	public static void main(String[] args)
