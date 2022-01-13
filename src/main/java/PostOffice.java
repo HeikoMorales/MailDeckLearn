@@ -62,13 +62,13 @@ public class PostOffice {
 			}
 
 			if (trainingMail.size() != 0) {
-				// System.out.println(trainingMail.size());
+
 				bufferTraining.put(trainingMail);
 			}
 			endUserLoaders++;
 		}
 		endCheckMail = true;
-		System.out.println("CAMBIOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO " + endCheckMail);
+		// System.out.println("CAMBIOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO " + endCheckMail);
 		mutex.unlock();
 
 		System.out.println("----------------------- UserLoader number: " + id + " -----------------------");
@@ -106,23 +106,22 @@ public class PostOffice {
 
 		mutexCourier.lock();
 		System.out.println("----------------------- Courier enter: " + id + "-----------------------");
-		while (!endCheckMail || !bufferTraining.isEmpty()) {
+		do {
 
 			System.out.println(
 					"endCheckMail: " + endCheckMail + " bufferTraining.isEmpty(): " + bufferTraining.isEmpty());
 			mutexCourier.unlock();
 
-			System.out.println("hilo: " + id + " antes de coger un traing");
+			System.out.println("hilo: " + id + " antes de coger un training");
 			List<Training> trainingsMail = bufferTraining.get();
-			System.out.println("hilo: " + id + " despues de coger un traing");
+			System.out.println("hilo: " + id + " despues de coger un training");
 
-			Thread.sleep(2000);
 			for (Training training : trainingsMail) {
-				System.out.println(training.getTrainingId());
+				System.out.println("training_id: " + training.getTrainingId());
 			}
 			mutexCourier.lock();
 
-		}
+		} while (!endCheckMail || !bufferTraining.isEmpty());
 
 		mutexCourier.unlock();
 		System.out.println("----------------------- Courier exit: " + id + " -----------------------");
