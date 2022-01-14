@@ -45,8 +45,8 @@ public class MailSender {
 
 		// System.out.println("Preparando el email a enviar");
 
-		Message message = prepareMessage(getSession(), decks);
-		Transport.send(message);
+		// Message message = prepareMessage(getSession(), decks);
+		// Transport.send(message);
 
 		// System.out.println("el mensage ha sido enviado");
 

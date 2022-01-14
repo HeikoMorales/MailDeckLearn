@@ -26,7 +26,7 @@ public class Courier extends Thread {
 				e.printStackTrace();
 			}
 		}
-		// System.out.println("----------------------- Courier enter: " + id +
-		// "-----------------------");
+		System.out.println("----------------------- Courier enter: " + id +
+				"-----------------------");
 	}
 }

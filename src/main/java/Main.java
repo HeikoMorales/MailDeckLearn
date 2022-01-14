@@ -32,10 +32,6 @@ public class Main {
 		runTherads();
 		joinTheads();
 
-		while (courierList.get(0).isAlive()) {
-			Thread.sleep(10);
-		}
-
 		long endTime = System.nanoTime();
 		long totalTime = endTime - startTime;
 		System.out.println(totalTime);

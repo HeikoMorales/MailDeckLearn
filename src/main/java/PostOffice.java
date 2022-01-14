@@ -42,34 +42,35 @@ public class PostOffice {
 			bufferUserId.put(userId);
 			contUser++;
 		}
-		// System.out.println("----------------------- UserIdLoaderAction number: " + id
-		// + " -----------------------");
+		System.out.println("----------------------- UserIdLoaderAction number: " + id
+				+ " -----------------------");
 
 	}
 
 	public void userLoaderAction(int id) throws InterruptedException {
-
 		mutex.lock();
 
-		while (endUserLoaders < DBUsers) {
-			List<Training> trainings = DBConnector.loadTrainings(bufferUserId.get());
-			List<Training> trainingMail = new ArrayList<Training>();
+		List<Training> trainings = DBConnector.loadTrainings(bufferUserId.get());
 
-			for (Training training : trainings) {
-				if (checkMail(training)) {
-					// System.out.println("necesario mandar correo");
-					trainingMail.add(training);
-				}
+		mutex.unlock();
+		List<Training> trainingMail = new ArrayList<Training>();
+
+		for (Training training : trainings) {
+			if (checkMail(training)) {
+				// System.out.println("necesario mandar correo");
+				trainingMail.add(training);
 			}
-
-			if (trainingMail.size() != 0) {
-
-				bufferTraining.put(trainingMail);
-			}
-			endUserLoaders++;
 		}
-		endCheckMail = true;
-		// System.out.println("CAMBIOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO " + endCheckMail);
+
+		if (trainingMail.size() != 0) {
+
+			bufferTraining.put(trainingMail);
+			// System.out.println("UserLoader number: " + id + " mete un trainingMail");
+
+		}
+
+		mutex.lock();
+		endUserLoaders++;
 		mutex.unlock();
 
 		// System.out.println("----------------------- UserLoader number: " + id + "
@@ -124,7 +125,22 @@ public class PostOffice {
 		return endCheckMail;
 	}
 
+	public void setEndCheckMail(boolean endCheckMail) {
+		mutex.lock();
+		this.endCheckMail = endCheckMail;
+		mutex.unlock();
+	}
+
 	public boolean getBufferTrainingIsEmpty() {
 		return bufferTraining.isEmpty();
 	}
+
+	public int getDBUsers() {
+		return DBUsers;
+	}
+
+	public int getEndUserLoaders() {
+		return endUserLoaders;
+	}
+
 }
