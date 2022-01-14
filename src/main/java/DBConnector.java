@@ -1,3 +1,7 @@
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
@@ -5,17 +9,22 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Properties;
 
 public class DBConnector {
 
-	static String url = "jdbc:mysql://localhost:3306/deck_learn";
-	static String username = "root";
-	static String password = "Ikasle12345";
+	private static Connection generateConnnection() throws FileNotFoundException, IOException, SQLException {
+		Properties properties = new Properties();
+		properties.load(new FileInputStream(new File("properties/DBsettings.properties")));
+		Connection connection = DriverManager.getConnection(properties.getProperty("URL"),
+				properties.getProperty("USERNAME"), properties.getProperty("PASSWORD"));
+		return connection;
+	}
 
 	public static Deck loadDeck(int deckId) {
 		Deck deck = null;
 		try {
-			Connection connection = DriverManager.getConnection(url, username, password);
+			Connection connection = generateConnnection();
 
 			String sql = "SELECT title, description FROM deck where deck_id = " + deckId;
 
@@ -30,6 +39,10 @@ public class DBConnector {
 		} catch (SQLException e) {
 
 			e.printStackTrace();
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
 		}
 		return deck;
 	}
@@ -37,7 +50,7 @@ public class DBConnector {
 	public static User loadUser(int userId) {
 		User user = null;
 		try {
-			Connection connection = DriverManager.getConnection(url, username, password);
+			Connection connection = generateConnnection();
 
 			String sql = "SELECT username, email FROM user where user_id = " + userId;
 
@@ -52,6 +65,10 @@ public class DBConnector {
 		} catch (SQLException e) {
 
 			e.printStackTrace();
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
 		}
 		return user;
 	}
@@ -59,7 +76,7 @@ public class DBConnector {
 	public static Integer loadMinBox(int training_session_id) {
 		Integer boxNumber = -1;
 		try {
-			Connection connection = DriverManager.getConnection(url, username, password);
+			Connection connection = generateConnnection();
 
 			String sql = "SELECT min(box_number) FROM results WHERE training_session_id = " + training_session_id;
 
@@ -74,6 +91,10 @@ public class DBConnector {
 		} catch (SQLException e) {
 
 			e.printStackTrace();
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
 		}
 		return boxNumber;
 	}
@@ -81,7 +102,7 @@ public class DBConnector {
 	public static Training_session loadTraining_session(int training_id) {
 		Training_session training_session = null;
 		try {
-			Connection connection = DriverManager.getConnection(url, username, password);
+			Connection connection = generateConnnection();
 
 			String sql = "SELECT * FROM training_session WHERE training_id = " + training_id;
 			Statement statement = connection.createStatement();
@@ -95,6 +116,10 @@ public class DBConnector {
 		} catch (SQLException e) {
 
 			e.printStackTrace();
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
 		}
 		return training_session;
 	}
@@ -102,7 +127,7 @@ public class DBConnector {
 	public static int countUsers() {
 		int userId = -1;
 		try {
-			Connection connection = DriverManager.getConnection(url, username, password);
+			Connection connection = generateConnnection();
 
 			String sql = "SELECT count(user_id) FROM user";
 			Statement statement = connection.createStatement();
@@ -116,6 +141,10 @@ public class DBConnector {
 		} catch (SQLException e) {
 
 			e.printStackTrace();
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
 		}
 		return userId;
 	}
@@ -123,7 +152,7 @@ public class DBConnector {
 	public static Integer loadUserID(int cuantity) {
 		int userID = -1;
 		try {
-			Connection connection = DriverManager.getConnection(url, username, password);
+			Connection connection = generateConnnection();
 
 			String sql = "SELECT user_id FROM user limit 1 offset " + cuantity;
 			Statement statement = connection.createStatement();
@@ -136,6 +165,10 @@ public class DBConnector {
 		} catch (SQLException e) {
 
 			e.printStackTrace();
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
 		}
 		return userID;
 	}
@@ -143,7 +176,7 @@ public class DBConnector {
 	public static List<Training> loadTrainings(int id) {
 		List<Training> trainings = new ArrayList<Training>();
 		try {
-			Connection connection = DriverManager.getConnection(url, username, password);
+			Connection connection = generateConnnection();
 
 			String sql = "SELECT * FROM training WHERE user_id = " + id;
 			Statement statement = connection.createStatement();
@@ -158,6 +191,10 @@ public class DBConnector {
 			connection.close();
 		} catch (SQLException e) {
 
+			e.printStackTrace();
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
 			e.printStackTrace();
 		}
 		return trainings;

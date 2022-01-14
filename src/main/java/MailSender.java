@@ -1,3 +1,7 @@
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.List;
 import java.util.Properties;
 
@@ -13,24 +17,38 @@ import javax.mail.internet.MimeMessage;
 
 public class MailSender {
 
-	final static String DeckLearnMail = "decklearning@gmail.com"; // to address. It can be any like gmail, hotmail etc.
-	final static String password = "Lh7aAdk$$L8yv^#"; // password for from mail address.
-	String userMail = " ", userName = " "; // from address. As this is using Gmail SMTP.
-	
+	String deckLearnMail = " ";
+	String password = " ";
+	String userMail = " ", userName = " ";
+
 	public MailSender() {
-		
+		try {
+			loadProperties();
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
-	
+
+	private void loadProperties() throws FileNotFoundException, IOException {
+		Properties properties = new Properties();
+		properties.load(new FileInputStream(new File("properties/mailsettings.properties")));
+		deckLearnMail = properties.getProperty("MAIL");
+		password = properties.getProperty("PASSWORD");
+	}
+
 	public void sendEmail(User user, List<Deck> decks) throws AddressException, MessagingException {
-		
+
 		this.userMail = user.getMail();
 		this.userName = user.getUsername();
-		
-		System.out.println("Preparando el email a enviar");
+
+		// System.out.println("Preparando el email a enviar");
+
 		Message message = prepareMessage(getSession(), decks);
 		Transport.send(message);
 
-		System.out.println("el mensage ha sido enviado");
+		// System.out.println("el mensage ha sido enviado");
 
 	}
 
@@ -38,9 +56,9 @@ public class MailSender {
 			throws AddressException, MessagingException {
 
 		Message message = new MimeMessage(session);
-		message.setFrom(new InternetAddress(DeckLearnMail));
+		message.setFrom(new InternetAddress(deckLearnMail));
 		message.setRecipient(Message.RecipientType.TO, new InternetAddress(userMail));
-		
+
 		message.setSubject("It's time to study!");
 		message.setText(createBodyMessage(decks));
 		return message;
@@ -50,7 +68,7 @@ public class MailSender {
 		StringBuilder stringBuilder = new StringBuilder();
 		for (Deck deck : decks) {
 			stringBuilder.append(deck.getTitle() + "\n");
-			stringBuilder.append("\t"+deck.getDescription() + "\n");
+			stringBuilder.append("\t" + deck.getDescription() + "\n");
 		}
 
 		return stringBuilder.toString();
@@ -64,19 +82,17 @@ public class MailSender {
 		property.setProperty("mail.smtp.host", "smtp.gmail.com");
 		property.setProperty("mail.smtp.port", "587");
 		property.setProperty("mail.smtp.ssl.protocols", "TLSv1.2");
-		
+
 		Session session = Session.getInstance(property, new Authenticator() {
 
 			@Override
 			protected PasswordAuthentication getPasswordAuthentication() {
-				return new PasswordAuthentication(DeckLearnMail, password);
+				return new PasswordAuthentication(deckLearnMail, password);
 			}
 		});
-		
+
 		System.out.println("sesion creada");
 		return session;
 	}
 
-	
-	
 }

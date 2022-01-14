@@ -11,6 +11,8 @@ import static java.time.temporal.ChronoUnit.DAYS;
 
 public class PostOffice {
 
+	MailSender mail;
+
 	Buffer bufferUserId;
 	BufferTraining bufferTraining;
 
@@ -28,6 +30,7 @@ public class PostOffice {
 		bufferTraining = new BufferTraining(bufferCapacity);
 		mutexCourier = new ReentrantLock();
 		mutex = new ReentrantLock();
+		mail = new MailSender();
 		DBUsers = DBConnector.countUsers();
 	}
 
@@ -39,7 +42,8 @@ public class PostOffice {
 			bufferUserId.put(userId);
 			contUser++;
 		}
-		System.out.println("----------------------- UserIdLoaderAction number: " + id + " -----------------------");
+		// System.out.println("----------------------- UserIdLoaderAction number: " + id
+		// + " -----------------------");
 
 	}
 
@@ -68,7 +72,8 @@ public class PostOffice {
 		// System.out.println("CAMBIOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO " + endCheckMail);
 		mutex.unlock();
 
-		System.out.println("----------------------- UserLoader number: " + id + " -----------------------");
+		// System.out.println("----------------------- UserLoader number: " + id + "
+		// -----------------------");
 	}
 
 	private boolean checkMail(Training training) {
@@ -109,7 +114,7 @@ public class PostOffice {
 			for (Training training : trainingsMail) {
 				decks.add(DBConnector.loadDeck(training.getDeck_id()));
 			}
-			MailSender mail = new MailSender();
+			// MailSender mail = new MailSender();
 			mail.sendEmail(DBConnector.loadUser(trainingsMail.get(0).getUser_id()), decks);
 		}
 		mutexCourier.unlock();

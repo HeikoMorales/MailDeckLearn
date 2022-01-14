@@ -16,8 +16,10 @@ public class Main {
 	int userLoaderTherads = 20;
 	int courierTherads = 20;
 	int userIdLoaderTherads = 1;
+	long startTime;
 
 	public Main() {
+		startTime = System.nanoTime();
 		postOffice = new PostOffice();
 		userLoaderList = new ArrayList<UserLoader>();
 		courierList = new ArrayList<Courier>();
@@ -29,6 +31,14 @@ public class Main {
 		initTheads();
 		runTherads();
 		joinTheads();
+
+		while (courierList.get(0).isAlive()) {
+			Thread.sleep(10);
+		}
+
+		long endTime = System.nanoTime();
+		long totalTime = endTime - startTime;
+		System.out.println(totalTime);
 	}
 
 	private void joinTheads() throws InterruptedException {
@@ -76,7 +86,9 @@ public class Main {
 
 	public static void main(String[] args)
 			throws IOException, AddressException, MessagingException, InterruptedException {
+
 		Main main = new Main();
 		main.execute();
+
 	}
 }
