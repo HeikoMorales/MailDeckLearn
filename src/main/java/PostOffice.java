@@ -3,11 +3,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+
+import javax.mail.MessagingException;
+import javax.mail.internet.AddressException;
+
 import static java.time.temporal.ChronoUnit.DAYS;
 
 public class PostOffice {
-
-	MailSender mail;
 
 	Buffer bufferUserId;
 	BufferTraining bufferTraining;
@@ -18,29 +20,24 @@ public class PostOffice {
 	int bufferCapacity = 20;
 	int endUserLoaders = 0;
 	boolean endCheckMail = false;
-	int countUsers = 0;
+	boolean getTraining = false;
+	int DBUsers, contUser = 0;
 
 	public PostOffice() {
 		bufferUserId = new Buffer(bufferCapacity);
 		bufferTraining = new BufferTraining(bufferCapacity);
 		mutexCourier = new ReentrantLock();
 		mutex = new ReentrantLock();
-		mail = new MailSender();
-		countUsers = DBConnector.countUsers();
+		DBUsers = DBConnector.countUsers();
 	}
 
 	public void UserIdLoaderAction(int id) throws InterruptedException {
 		int userId;
 
-		for (int i = 0; i < Math.ceil((float) countUsers); i++) {
-
-			userId = DBConnector.loadUserID(i);
-
-			// System.out.println(userId);
+		while (contUser < DBUsers) {
+			userId = DBConnector.loadUserID(contUser);
 			bufferUserId.put(userId);
-
-			// System.out.println("----------------------- UserIdLoaderAction number: " + id
-			// + " Vuelta" + i + " -----------------------");
+			contUser++;
 		}
 		System.out.println("----------------------- UserIdLoaderAction number: " + id + " -----------------------");
 
@@ -50,7 +47,7 @@ public class PostOffice {
 
 		mutex.lock();
 
-		while (endUserLoaders < countUsers) {
+		while (endUserLoaders < DBUsers) {
 			List<Training> trainings = DBConnector.loadTrainings(bufferUserId.get());
 			List<Training> trainingMail = new ArrayList<Training>();
 
@@ -102,31 +99,27 @@ public class PostOffice {
 
 	}
 
-	public void courierAction(int id) throws InterruptedException {
+	public void courierAction(int id) throws InterruptedException, AddressException, MessagingException {
 
 		mutexCourier.lock();
-		System.out.println("----------------------- Courier enter: " + id + "-----------------------");
-		do {
 
-			System.out.println(
-					"endCheckMail: " + endCheckMail + " bufferTraining.isEmpty(): " + bufferTraining.isEmpty());
-			mutexCourier.unlock();
-
-			System.out.println("hilo: " + id + " antes de coger un training");
+		if (!bufferTraining.isEmpty()) {
 			List<Training> trainingsMail = bufferTraining.get();
-			System.out.println("hilo: " + id + " despues de coger un training");
-
+			List<Deck> decks = new ArrayList<Deck>();
 			for (Training training : trainingsMail) {
-				System.out.println("training_id: " + training.getTrainingId());
+				decks.add(DBConnector.loadDeck(training.getDeck_id()));
 			}
-			mutexCourier.lock();
-
-		} while (!endCheckMail || !bufferTraining.isEmpty());
-
+			MailSender mail = new MailSender();
+			mail.sendEmail(DBConnector.loadUser(trainingsMail.get(0).getUser_id()), decks);
+		}
 		mutexCourier.unlock();
-		System.out.println("----------------------- Courier exit: " + id + " -----------------------");
 	}
-	// Se boklea por la linea List<Training> trainingsMail = bufferTraining.get();
-	// (116) los hilos se quedan esperando a que se metan mas datos pero nunca va a
-	// apasar
+
+	public boolean getEndCheckMail() {
+		return endCheckMail;
+	}
+
+	public boolean getBufferTrainingIsEmpty() {
+		return bufferTraining.isEmpty();
+	}
 }

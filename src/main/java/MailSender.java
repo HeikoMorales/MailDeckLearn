@@ -1,3 +1,4 @@
+import java.util.List;
 import java.util.Properties;
 
 import javax.mail.Authenticator;
@@ -20,30 +21,39 @@ public class MailSender {
 		
 	}
 	
-	public void sendEmail(String userMail, String userName) throws AddressException, MessagingException {
+	public void sendEmail(User user, List<Deck> decks) throws AddressException, MessagingException {
 		
-		
-		this.userMail = userMail;
-		this.userName = userName;
+		this.userMail = user.getMail();
+		this.userName = user.getUsername();
 		
 		System.out.println("Preparando el email a enviar");
-		Message message = prepareMessage(getSession());
+		Message message = prepareMessage(getSession(), decks);
 		Transport.send(message);
 
 		System.out.println("el mensage ha sido enviado");
 
 	}
 
-	private Message prepareMessage(Session session)
+	private Message prepareMessage(Session session, List<Deck> decks)
 			throws AddressException, MessagingException {
 
 		Message message = new MimeMessage(session);
 		message.setFrom(new InternetAddress(DeckLearnMail));
 		message.setRecipient(Message.RecipientType.TO, new InternetAddress(userMail));
 		
-		message.setSubject("COÑOOOOOOOOO");
-		message.setText("JODERRRRRRRRRRRRRRRRRRRRR");
+		message.setSubject("It's time to study!");
+		message.setText(createBodyMessage(decks));
 		return message;
+	}
+
+	private String createBodyMessage(List<Deck> decks) {
+		StringBuilder stringBuilder = new StringBuilder();
+		for (Deck deck : decks) {
+			stringBuilder.append(deck.getTitle() + "\n");
+			stringBuilder.append("\t"+deck.getDescription() + "\n");
+		}
+
+		return stringBuilder.toString();
 	}
 
 	private Session getSession() {

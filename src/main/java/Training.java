@@ -17,11 +17,21 @@ public class Training {
 	public int getTrainingId() {
 		return training_id;
 	}
+	
+	public int getUser_id() {
+		return user_id;
+	}
+
+	public int getDeck_id() {
+		return deck_id;
+	}
 
 	@Override
 	public String toString() {
 		return "Training [training_id=" + training_id + ", user_id=" + user_id + ", deck_id=" + deck_id + ", date="
 				+ date + "]";
 	}
+
+	
 
 }

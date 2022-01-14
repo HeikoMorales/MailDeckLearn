@@ -1,3 +1,5 @@
+import javax.mail.MessagingException;
+import javax.mail.internet.AddressException;
 
 public class Courier extends Thread{
 
@@ -10,14 +12,22 @@ public class Courier extends Thread{
 	}
 	
 	@Override
-	public void run() {
-		//while (!this.isInterrupted()) {
+	public void run() {	
+		while(!postOffice.getEndCheckMail() || !postOffice.getBufferTrainingIsEmpty()) {
 			try {
-				postOffice.courierAction(id);
+				try {
+					postOffice.courierAction(id);
+				} catch (AddressException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (MessagingException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
 			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-		//}
+		}
+		System.out.println("----------------------- Courier enter: " + id + "-----------------------");
 	}
 }

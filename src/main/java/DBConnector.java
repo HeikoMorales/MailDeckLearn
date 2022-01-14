@@ -12,6 +12,50 @@ public class DBConnector {
 	static String username = "root";
 	static String password = "Ikasle12345";
 
+	public static Deck loadDeck(int deckId) {
+		Deck deck = null;
+		try {
+			Connection connection = DriverManager.getConnection(url, username, password);
+
+			String sql = "SELECT title, description FROM deck where deck_id = " + deckId;
+
+			Statement statement = connection.createStatement();
+
+			ResultSet result = statement.executeQuery(sql);
+
+			while (result.next()) {
+				deck = new Deck(result.getString(1), result.getString(2));
+			}
+			connection.close();
+		} catch (SQLException e) {
+
+			e.printStackTrace();
+		}
+		return deck;
+	}
+
+	public static User loadUser(int userId) {
+		User user = null;
+		try {
+			Connection connection = DriverManager.getConnection(url, username, password);
+
+			String sql = "SELECT username, email FROM user where user_id = " + userId;
+
+			Statement statement = connection.createStatement();
+
+			ResultSet result = statement.executeQuery(sql);
+
+			while (result.next()) {
+				user = new User(result.getString(1), result.getString(2));
+			}
+			connection.close();
+		} catch (SQLException e) {
+
+			e.printStackTrace();
+		}
+		return user;
+	}
+
 	public static Integer loadMinBox(int training_session_id) {
 		Integer boxNumber = -1;
 		try {
