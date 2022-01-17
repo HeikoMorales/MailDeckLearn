@@ -13,8 +13,8 @@ public class Main {
 	List<Courier> courierList;
 	List<UserIdLoader> userIdLoaderList;
 
-	int userLoaderTherads = 20;
-	int courierTherads = 20;
+	int userLoaderTherads = 1;
+	int courierTherads = 1;
 	int userIdLoaderTherads = 1;
 	long startTime;
 
@@ -32,20 +32,14 @@ public class Main {
 		runTherads();
 		joinTheads();
 
-		while (courierList.get(0).isAlive()) {
-			Thread.sleep(10);
-		}
-
 		long endTime = System.nanoTime();
 		long totalTime = endTime - startTime;
 		System.out.println(totalTime);
 	}
 
 	private void joinTheads() throws InterruptedException {
-		for (int i = 0; i < userLoaderTherads; i++) {
-			userLoaderList.get(i).join();
-		}
-
+		System.out.println("colas");
+		
 		for (int i = 0; i < userIdLoaderTherads; i++) {
 			userIdLoaderList.get(i).join();
 		}
@@ -53,6 +47,14 @@ public class Main {
 		for (int i = 0; i < courierTherads; i++) {
 			courierList.get(i).join();
 		}
+
+		for (int i = 0; i < userLoaderTherads; i++) {
+			userLoaderList.get(i).interrupt();
+			System.out.println("hilo interrupt: "+ i);
+			userLoaderList.get(i).join();
+			System.out.println("hilo join: "+ i);
+		}
+		
 	}
 
 	private void runTherads() {

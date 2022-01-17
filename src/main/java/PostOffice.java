@@ -9,9 +9,10 @@ import javax.mail.internet.AddressException;
 
 import static java.time.temporal.ChronoUnit.DAYS;
 
-public class PostOffice {
+import java.io.FileNotFoundException;
+import java.io.UnsupportedEncodingException;
 
-	MailSender mail;
+public class PostOffice {
 
 	Buffer bufferUserId;
 	BufferTraining bufferTraining;
@@ -21,7 +22,7 @@ public class PostOffice {
 
 	int bufferCapacity = 20;
 	int endUserLoaders = 0;
-	boolean endCheckMail = false;
+	boolean endUserId = false, endCheckMail = false;
 	boolean getTraining = false;
 	int DBUsers, contUser = 0;
 
@@ -30,7 +31,7 @@ public class PostOffice {
 		bufferTraining = new BufferTraining(bufferCapacity);
 		mutexCourier = new ReentrantLock();
 		mutex = new ReentrantLock();
-		mail = new MailSender();
+
 		DBUsers = DBConnector.countUsers();
 	}
 
@@ -42,38 +43,28 @@ public class PostOffice {
 			bufferUserId.put(userId);
 			contUser++;
 		}
-		// System.out.println("----------------------- UserIdLoaderAction number: " + id
-		// + " -----------------------");
+		endUserId = true;
+		System.out.println("----------------------- UserIdLoaderAction number: " + id + " -----------------------");
 
 	}
 
 	public void userLoaderAction(int id) throws InterruptedException {
 
-		mutex.lock();
+		// System.out.println("----------------------- UserLoader enter: " + id +
+		// "-----------------------");
 
-		while (endUserLoaders < DBUsers) {
-			List<Training> trainings = DBConnector.loadTrainings(bufferUserId.get());
-			List<Training> trainingMail = new ArrayList<Training>();
+		List<Training> trainings = DBConnector.loadTrainings(bufferUserId.get());
+		List<Training> trainingMail = new ArrayList<Training>();
 
-			for (Training training : trainings) {
-				if (checkMail(training)) {
-					// System.out.println("necesario mandar correo");
-					trainingMail.add(training);
-				}
+		for (Training training : trainings) {
+			if (checkMail(training)) {
+				// System.out.println("necesario mandar correo");
+				trainingMail.add(training);
 			}
-
-			if (trainingMail.size() != 0) {
-
-				bufferTraining.put(trainingMail);
-			}
-			endUserLoaders++;
 		}
-		endCheckMail = true;
-		// System.out.println("CAMBIOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO " + endCheckMail);
-		mutex.unlock();
-
-		// System.out.println("----------------------- UserLoader number: " + id + "
-		// -----------------------");
+		if (trainingMail.size() != 0) {
+			bufferTraining.put(trainingMail);
+		}
 	}
 
 	private boolean checkMail(Training training) {
@@ -104,20 +95,30 @@ public class PostOffice {
 
 	}
 
-	public void courierAction(int id) throws InterruptedException, AddressException, MessagingException {
+	public void courierAction(int id) throws InterruptedException, AddressException, MessagingException, UnsupportedEncodingException, FileNotFoundException {
 
-		mutexCourier.lock();
-
-		if (!bufferTraining.isEmpty()) {
-			List<Training> trainingsMail = bufferTraining.get();
-			List<Deck> decks = new ArrayList<Deck>();
-			for (Training training : trainingsMail) {
-				decks.add(DBConnector.loadDeck(training.getDeck_id()));
-			}
-			// MailSender mail = new MailSender();
-			mail.sendEmail(DBConnector.loadUser(trainingsMail.get(0).getUser_id()), decks);
+		List<Training> trainingsMail = bufferTraining.get();
+		List<Deck> decks = new ArrayList<Deck>();
+		for (Training training : trainingsMail) {
+			decks.add(DBConnector.loadDeck(training.getDeck_id()));
 		}
-		mutexCourier.unlock();
+		Thread.sleep(5000);
+		 MailSender mail = new MailSender();
+		 mail.sendEmail(DBConnector.loadUser(trainingsMail.get(0).getUser_id()),decks);
+		 mail.closeTransport();
+
+	}
+
+	public void setEndCheckMail(boolean bool) {
+		endCheckMail = bool;
+	}
+
+	public boolean getEndUserId() {
+		return endUserId;
+	}
+
+	public boolean getBufferUserIdIsEmpty() {
+		return bufferUserId.isEmpty();
 	}
 
 	public boolean getEndCheckMail() {
