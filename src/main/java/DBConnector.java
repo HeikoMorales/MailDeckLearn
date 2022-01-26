@@ -26,14 +26,14 @@ public class DBConnector {
 		try {
 			Connection connection = generateConnnection();
 
-			String sql = "SELECT title, description FROM deck where deck_id = " + deckId;
+			String sql = "SELECT title FROM deck where deck_id = " + deckId;
 
 			Statement statement = connection.createStatement();
 
 			ResultSet result = statement.executeQuery(sql);
 
 			while (result.next()) {
-				deck = new Deck(result.getString(1), result.getString(2));
+				deck = new Deck(result.getString(1));
 			}
 			connection.close();
 		} catch (SQLException e) {
@@ -104,7 +104,7 @@ public class DBConnector {
 		try {
 			Connection connection = generateConnnection();
 
-			String sql = "SELECT * FROM training_session WHERE training_id = " + training_id;
+			String sql = "SELECT * FROM training_session WHERE training_id = " + training_id + " order by training_session_date limit 1";
 			Statement statement = connection.createStatement();
 
 			ResultSet result = statement.executeQuery(sql);

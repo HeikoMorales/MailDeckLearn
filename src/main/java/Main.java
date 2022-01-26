@@ -13,9 +13,9 @@ public class Main {
 	List<Courier> courierList;
 	List<UserIdLoader> userIdLoaderList;
 
-	int userLoaderTherads = 1;
-	int courierTherads = 1;
-	int userIdLoaderTherads = 1;
+	int userLoaderTherads = 20;
+	int courierTherads = 20;
+	int userIdLoaderTherads = 20;
 	long startTime;
 
 	public Main() {

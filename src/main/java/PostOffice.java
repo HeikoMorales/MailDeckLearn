@@ -1,3 +1,7 @@
+import static java.time.temporal.ChronoUnit.DAYS;
+
+import java.io.FileNotFoundException;
+import java.io.UnsupportedEncodingException;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -7,18 +11,12 @@ import java.util.concurrent.locks.ReentrantLock;
 import javax.mail.MessagingException;
 import javax.mail.internet.AddressException;
 
-import static java.time.temporal.ChronoUnit.DAYS;
-
-import java.io.FileNotFoundException;
-import java.io.UnsupportedEncodingException;
-
 public class PostOffice {
 
 	Buffer bufferUserId;
 	BufferTraining bufferTraining;
 
 	Lock mutex;
-	Lock mutexCourier;
 
 	int bufferCapacity = 20;
 	int endUserLoaders = 0;
@@ -27,21 +25,20 @@ public class PostOffice {
 	int DBUsers, contUser = 0;
 
 	public PostOffice() {
+		mutex = new ReentrantLock();
 		bufferUserId = new Buffer(bufferCapacity);
 		bufferTraining = new BufferTraining(bufferCapacity);
-		mutexCourier = new ReentrantLock();
-		mutex = new ReentrantLock();
 
 		DBUsers = DBConnector.countUsers();
 	}
 
 	public void UserIdLoaderAction(int id) throws InterruptedException {
-		int userId;
 
 		while (contUser < DBUsers) {
-			userId = DBConnector.loadUserID(contUser);
-			bufferUserId.put(userId);
+			mutex.lock();
 			contUser++;
+			mutex.unlock();
+			bufferUserId.put(DBConnector.loadUserID(contUser));
 		}
 		endUserId = true;
 		System.out.println("----------------------- UserIdLoaderAction number: " + id + " -----------------------");
@@ -50,15 +47,11 @@ public class PostOffice {
 
 	public void userLoaderAction(int id) throws InterruptedException {
 
-		// System.out.println("----------------------- UserLoader enter: " + id +
-		// "-----------------------");
-
 		List<Training> trainings = DBConnector.loadTrainings(bufferUserId.get());
 		List<Training> trainingMail = new ArrayList<Training>();
 
 		for (Training training : trainings) {
 			if (checkMail(training)) {
-				// System.out.println("necesario mandar correo");
 				trainingMail.add(training);
 			}
 		}
@@ -80,8 +73,8 @@ public class PostOffice {
 
 				LocalDate training_session_date = training_session.getTraining_session_date().toLocalDate();
 				Long daysBetween = DAYS.between(training_session_date, LocalDate.now());
-				for (int i = 0; i < 10; i++) {
-					if (Math.pow(2, i) > daysBetween) {
+				for (int i = 1; i < 10; i++) {
+					if (Math.pow(2, i)-1 > daysBetween) {
 						if (i >= box_number) {
 							needMail = true;
 							break;
@@ -103,10 +96,9 @@ public class PostOffice {
 			decks.add(DBConnector.loadDeck(training.getDeck_id()));
 		}
 		Thread.sleep(5000);
-		 MailSender mail = new MailSender();
-		 mail.sendEmail(DBConnector.loadUser(trainingsMail.get(0).getUser_id()),decks);
-		 mail.closeTransport();
-
+		MailSender mail = new MailSender();
+		mail.sendEmail(DBConnector.loadUser(trainingsMail.get(0).getUser_id()),decks);
+		mail.closeTransport();
 	}
 
 	public void setEndCheckMail(boolean bool) {

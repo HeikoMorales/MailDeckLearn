@@ -2,18 +2,14 @@
 
 public class Deck {
 
-    String title, description;
+    String title;
 
-    public Deck(String title, String description) {
+    public Deck(String title) {
         this.title = title;
-        this.description = description;
     }
 
     public String getTitle() {
         return title;
-    }
-    public String getDescription() {
-        return description;
     }
 
 }
