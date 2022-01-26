@@ -38,7 +38,6 @@ public class Main {
 	}
 
 	private void joinTheads() throws InterruptedException {
-		System.out.println("colas");
 		
 		for (int i = 0; i < userIdLoaderTherads; i++) {
 			userIdLoaderList.get(i).join();
